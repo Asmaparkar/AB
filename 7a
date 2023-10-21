@@ -1,0 +1,36 @@
+install.packages("tidyverse")
+install.packages("sentimentr")
+install.packages("wordcloud")
+install.packages("tokenizers")
+install.packages("tm")
+#load all the libraries
+library(tidyverse)
+library(sentimentr)
+library(wordcloud)
+library(tokenizers)
+library(tm)
+#read the hotel reviews data
+print(getwd())
+reviews<-read_csv("hotels.csv")
+head(reviews)
+tokens <-tokenize_words(reviews$Text)
+print(tokens)
+wordcloud(words=tokens,min.freq=10,max.words=60,colors="blue")
+summary(tokens)
+sentiment_score<-sentiment_score$tokens
+Corpus <- Corpus(VectorSource(reviews))
+Corpus <- tm_max(Corpus,removePunctuation)
+Corpus <- tm_map(Corpus,removeNumbers)
+Corpus <- tm_map_Corpus(content_transformer(tolower))
+summary(Corpus)
+head(Corpus)
+dtm <- DocumentTermMatrix(Corpus)
+for i in l:length(sentiments):
+  cat 
+w <- data.frame(names(w),w)
+dtm <- DocumentTermMatrix(Corpus)
+sentiments <-sentimentr_data(dtm)
+for (i in l:length(sentiments))
+{cat (paste("Reviews: ",reviews[i], "\n"))
+  cat(paste("Sentiment:",sentiments[i],"\n \n"))}
+w <- data.frame(names(w),w)
