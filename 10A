@@ -1,0 +1,17 @@
+shell1
+Commands - Cassandra
+SHELL 2 : Help command 
+
+create keyspace Asma WITH replication={'class':'SimpleStrategy','replication_factor':3};
+Show keyspace;
+Use asma
+
+create table employees(id int PRIMARY KEY,name text,salary varint);
+
+INSERT INTO employees(id,name,salary) values(102,'Iqra',35000);
+Update Query: update employees Set name='Arhaan' Where id=103;
+
+Create table emp_track(emp_no int,dept text,name text,PRIMARY KEY(dept,emp_no))
+WITH Clustering ORDER BY(emp_no desc);
+Insert into emp_track(emp_no,dept,name) values(123,’database’,’virat’);
+Select * from emp_track;
