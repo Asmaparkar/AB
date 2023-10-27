@@ -1,0 +1,19 @@
+#6 Real-Time Word Count with PySpark Streaming.
+
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+print('Asma Parkar')
+
+#Create a spark ontext and streaming context
+sc=SparkContext("local[2]","Pyspark Streaming Wordreduce")
+ssc=StreamingContext(sc,1)
+
+#Create a socket stream to listen for data on the localhost
+lines=ssc.socketTextStream("localhost",9999)
+ws=lines.window(10,2) # Defining a window for 10 secs and sliding interval 2 secs
+word_counts=ws.flatMap(lambda line:line.split(" ")).map(lambda word:(word,1)).reduceByKey(lambda x,y:x+y)
+word_counts.pprint()
+
+#Start Streaming
+ssc.start()
+ssc.awaitTermination()
