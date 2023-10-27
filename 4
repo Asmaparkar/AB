@@ -1,0 +1,23 @@
+#4 Creating a spark session using the configuration and DataFrame creation
+
+from pyspark.conf import SparkConf
+from pyspark.sql import SparkSession
+
+#create a spark configuration
+spark_conf=SparkConf()
+spark_conf.set("spark.app.name","DataFrame")
+spark_conf.set("spark.executor.memory","2g")
+spark_conf.set("spark.cores.max","2")
+
+#create a spark session using the configuration
+spark=SparkSession.builder.config(conf=spark_conf).getOrCreate()
+
+#sample data
+data=[("Asma",22),("Iqra",20),("Jimmy",21),("Ayesha",25),("Fatima",23)]
+columns="Name","Age"
+
+#Create a dataframe from the sample data
+df=spark.createDataFrame(data,columns)
+df.show()
+
+spark.stop()
