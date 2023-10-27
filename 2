@@ -1,0 +1,18 @@
+
+from pyspark.sql import SparkSession
+import pyspark
+#joining two dataframe
+spark=SparkSession.builder.appName("Example 1").getOrCreate()
+data1=[("Asma",1),("Iqra",2),("Jimmy",3)]
+data2=[("Asma","IT Engineer"),("Iqra","Doctor"),("Jimmy","Student")]
+col1=["Name","RollNo"]
+col2=["Name","Profession"]
+df1=spark.createDataFrame(data1,col1)
+df2=spark.createDataFrame(data2,col2)
+join_df=df1.join(df2,"Name","inner")
+print("Inner Function")
+join_df2=df1.join(df2,"Name","outer")
+join_df.show()
+print("Outer Function")
+join_df2.show()
+spark.stop()
