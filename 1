@@ -1,14 +1,8 @@
-install.packages("arules") #analysis package used in transactional dataset
-install.packages("arulesViz") 
-install.packages("RColorBrewer") #Coloring the graph
-#Loading Libraries
-library(arules)
-library(arulesViz)
-library(RColorBrewer)
-data("Groceries")
-rules<-apriori(Groceries,parameter = list(supp=0.01,conf=0.2))
-#supp-. relative frequency between 2 items in dataset,conf=items reatively
-#using inspect function
-inspect(rules[1:7]) #strong association between 7 items
-#Using itemFrequencyPlot() function
-arules::itemFrequencyPlot(Groceries,topN=10, col=brewer.pal(8,'Pastel2'), main="Bar graph", type="relative", ylab="ItemFrequency(Relative)")
+
+from pyspark.sql import SparkSession
+import pyspark
+#initialize the spark
+spark=SparkSession.builder.appName("Example1").getOrCreate()
+print("Asma ")
+data_df=spark.read.csv("iris.csv")
+data_df.show()
