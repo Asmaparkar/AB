@@ -1,0 +1,949 @@
+# A Simple client class that generates the private and public keys by using the built in Python RSA algorithm and test it.
+Install the package pycryptodome
+from Crypto.PublicKey import RSA
+import time
+#changing the number frpm 1024 to 2048
+key= RSA.generate(2048)
+start_time=time.time()
+p_key=key.public_key().export_key("PEM")
+priv_key=key.export_key("PEM")
+print("Asma Parkar-22")
+print(p_key)
+print(priv_key)
+end_time=time.time()
+time=end_time-start_time
+print(time)
+
+
+
+# A transaction class to send and receive money and  test it.
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import binascii
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA
+import datetime
+from collections import OrderedDict
+
+class Client:
+    def __init__(self):
+        random = Random.new().read  # ensures a new hash is created every time
+        self._private_key = RSA.generate(1024, random)  # private key is used for record-keeping
+        self._public_key = self._private_key.publickey()
+        self._signer = pkcs1_15.new(self._private_key)
+
+    @property
+    def identity(self):
+        return binascii.hexlify(self._public_key.exportKey(format='DER')).decode('ascii')
+
+class Transaction:
+    def __init__(self, sender, receiver, value):
+        self.sender = sender
+        self.receiver = receiver
+        self.value = value
+        self.time = datetime.datetime.now()
+
+    def to_dict(self):
+        if self.sender == "Genesis":
+            identity = "Genesis"
+        else:
+            identity = self.sender.identity
+        return OrderedDict({
+            "sender": identity,
+            "receiver": self.receiver,  # Fix the attribute name
+            "value": self.value,
+            "time": self.time
+        })
+
+    def sign_transaction(self):
+        private_key = self.sender._private_key
+        signer = pkcs1_15.new(private_key)
+        h = SHA.new(str(self.to_dict()).encode('utf-8'))
+        signature = binascii.hexlify(signer.sign(h)).decode('ascii')
+        return signature
+
+def display_tran(transaction):
+    dict = transaction.to_dict()
+    print('\nsender, Glaz --> \n' + dict['sender'])
+    print('\nreceiver, Thermite -->\n' + dict['receiver'])
+    print('\nvalue -->\n' + str(dict['value']))
+    print('\ntime -->\n' + str(dict['time']))
+
+transactions = []
+
+Asma = Client()
+print(Asma.identity)
+
+Pooja = Client()
+print(Pooja.identity)
+
+T3 = Client()
+print(T3.identity)
+
+t1 = Transaction(
+    Asma,
+    Pooja.identity,
+    10
+)
+
+signature = t1.sign_transaction()
+transactions.append(t1)
+
+t2 = Transaction(
+     Pooja,
+     Asma.identity,
+    11
+)
+
+signature = t2.sign_transaction()
+transactions.append(t2)
+
+t3 = Transaction(
+    T3,
+    Asma.identity,
+    13
+)
+
+signature = t3.sign_transaction()
+transactions.append(t3)
+
+for t in transactions:
+    print('\nsignature -->\n' + signature)
+    display_tran(t)
+
+
+
+# Create multiple transactions and display them.
+import random
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import binascii
+from Crypto.Cipher import PKCS1_v1_5
+from Crypto.Hash import SHA1
+import datetime
+from Crypto.Signature import PKCS1_v1_5
+import collections
+from Crypto.Signature import PKCS1_v1_5
+from collections import OrderedDict
+
+class Client:
+  def __init__(self):
+    random=Random.new().read
+    self._private_key=RSA.generate(1024,random) # private key is used for record keeping
+    self._public_key=self._private_key.publickey()
+    self._signer=PKCS1_v1_5.new(self._private_key)
+  @property
+  def identity(self):
+     return binascii.hexlify(self._public_key.exportKey(format='DER')).decode('ascii')
+
+class Transaction:
+  def __init__(self,sender,receiver,value):
+    self.sender=sender
+    self.receiver=receiver
+    self.value=value
+    self.time=datetime.datetime.now()
+
+  def to_dict(self):
+    if self.sender=="Genesis":
+      identity="Gensis"
+    else:
+      identity=self.sender.identity
+    return collections.OrderedDict({
+        "sender":identity,
+        "receiver":self.receiver,
+        "value":self.value,
+        "time":self.time
+    })
+  def sign_tran(self):
+    private_key=self.sender._private_key
+    signer=PKCS1_v1_5.new(private_key)
+    h=SHA1.new(str(self.to_dict()).encode('utf8'))
+    return binascii.hexlify(signer.sign(h)).decode('ascii')
+
+def display_tran(transaction):
+    dict=transaction.to_dict()
+    print('\nsender,Asma-->\n'+dict['sender'])
+    print('\nreceiver,Jimmy-->\n'+dict['receiver'])
+    print('\nvalue-->\n'+str(dict['value']))
+    print('\nstime-->\n'+str(dict['time']))
+
+transactions=["Transaction1 1","Transaction 2","Transaction 3"]
+
+Asma=Client()
+Jimmy=Client()
+
+for transaction in transactions:
+  t=Transaction(Asma,Jimmy.identity,transaction)
+  t.sign_tran()
+  display_tran(t)
+
+
+#  Create a blockchain, a genesis block and execute it.
+import hashlib
+import json
+from time import time
+
+class Blockchain:
+  def __init__(self):
+    self.chain = []
+    self.pending_transactions = []
+
+    #create a genesis block
+    self.add_block(previous_hash='1')
+
+  def add_block(self, proof = None, previous_hash = None):
+    block = {
+        'index' : len(self.chain)+1,
+        'timestamp' : time(),
+        'transactions': self.pending_transactions,
+        'proof' : proof or 0, #Proofof Work
+        'previous_hash': previous_hash or self.hash(self.chain[-1]) if self.chain else None,
+    }
+
+    #Reset the list of pending transaction
+    self.pending_transactions = []
+    self.chain.append(block)
+    return block
+
+  def add_transaction(self, sender, recipient , amount):
+    transaction = {
+        'sender': sender,
+        'recipient' : recipient,
+        'amount': amount,
+    }
+    self.pending_transactions.append(transaction)
+    return self.last_block['index']+1
+
+  @staticmethod
+  def hash(block):
+    #hashes a block
+    block_string= json.dumps(block, sort_keys = True).encode()
+    return hashlib.sha256(block_string).hexdigest()
+
+  @property
+  def last_block(self):
+    return self.chain[-1]
+
+my_blockchain = Blockchain()
+
+#Add transactions
+my_blockchain.add_transaction('Alice','Bob',10)
+my_blockchain.add_transaction('Bob','Charlie',5)
+my_blockchain.add_transaction('Charlie','Asma',10)
+my_blockchain.add_transaction('Asma','Nabila',5)
+
+proof_of_work = 123
+previous_hash = my_blockchain.hash(my_blockchain.last_block)
+
+my_blockchain.add_block(proof_of_work, previous_hash)
+
+#Dump the blockchain
+for block in my_blockchain.chain:
+  print(block)
+
+# Create a mining function and test it.
+import hashlib
+def sha256(message):
+  return hashlib.sha256(message.encode('ascii')).hexdigest()
+
+def mine(message,difficulty=1):
+#It ensures the difficulty level should be greater than 1
+  assert difficulty>=1
+  prefix ='1'*difficulty
+  print("prefix",prefix)
+
+  for i in range(1000):
+    digest=sha256(str(hash(message))+str(i))
+    print("TESTINT ==>"+digest)
+    if digest.startswith(prefix):
+        print("After "+str(i)+" Iteration found nounce "+digest)
+        return 1
+
+mine("Asma parkar",2))
+
+
+
+# Add blocks to the miner and dump the blockchain.
+import hashlib
+import json
+from time import time
+
+class Blockchain:
+  def __init__(self):
+    self.chain = []
+    self.pending_transactions = []
+
+    #create a genesis block
+    self.add_block(previous_hash='1')
+
+  def add_block(self, proof = None, previous_hash = None):
+    block = {
+        'index' : len(self.chain)+1,
+        'timestamp' : time(),
+        'transactions': self.pending_transactions,
+        'proof' : proof or 0, #Proofof Work
+        'previous_hash': previous_hash or self.hash(self.chain[-1]) if self.chain else None,
+    }
+
+    #Reset the list of pending transaction
+    self.pending_transactions = []
+    self.chain.append(block)
+    return block
+
+  def add_transaction(self, sender, recipient , amount):
+    transaction = {
+        'sender': sender,
+        'recipient' : recipient,
+        'amount': amount,
+    }
+    self.pending_transactions.append(transaction)
+    return self.last_block['index']+1
+
+  @staticmethod
+  def hash(block):
+    #hashes a block
+    block_string= json.dumps(block, sort_keys = True).encode()
+    return hashlib.sha256(block_string).hexdigest()
+
+  @property
+  def last_block(self):
+    return self.chain[-1]
+
+my_blockchain = Blockchain()
+
+#Add transactions
+my_blockchain.add_transaction('Alice','Bob',10)
+my_blockchain.add_transaction('Bob','Charlie',5)
+my_blockchain.add_transaction('Charlie','Asma',10)
+my_blockchain.add_transaction('Asma','Nabila',5)
+
+proof_of_work = 123
+previous_hash = my_blockchain.hash(my_blockchain.last_block)
+
+my_blockchain.add_block(proof_of_work, previous_hash)
+
+#Dump the blockchain
+for block in my_blockchain.chain:
+  print(block)
+
+
+# (1)	Variable
+CODE:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract variable_dem{
+int256 public sign_num;
+bool public isTrue;
+address public wallet_address;
+uint256[3] public fixarray;
+string public message;
+enum status {Pending, Approved}
+status public currentstatus;
+constructor()
+{
+sign_num=-45;
+isTrue=true;
+wallet_address=msg.sender;
+fixarray=[3,10,8];
+currentstatus=status.Pending;
+message="K.C college";
+}
+function update_var() public {
+sign_num=-20;
+isTrue=false;
+wallet_address=msg.sender;
+fixarray [2]=37;
+currentstatus=status.Approved;
+message="K.C College MSc Part 2”.
+}
+}
+
+
+2)	Operations
+
+CODE:
+
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract math{
+    uint256 public num1;
+    uint256 public num2;
+    uint256 public result;
+    function setnum (uint256 _num1, uint _num2)public {
+   	num1 = _num1;
+  	num2 = _num2;
+}
+function div() public returns (uint) {
+    	require (num2!=0, "oops that possible to divide");
+   	 result=num1/num2;
+   	 return result;
+}
+function add() public returns (uint){
+    	result=num1+num2;
+   	 return result;
+}
+function sub() public returns (uint){
+   	 result=num1-num2;
+    	return result;
+}
+function multiply()public returns (uint){
+ 	   result=num1*num2;
+ 	   return result;
+}
+}
+
+
+
+(3)	Loops
+
+CODE:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+contract WhileLoopExample {
+    uint256 public counter;
+    function increment (uint256 _iterations) public {
+        uint256 i = 0;
+        while (i < _iterations) {
+            counter++;
+            i++;
+        }
+    }
+}
+
+
+
+(4)	Decision Making
+CODE:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Decision_Making{
+    uint256 public num;
+
+    function setNumber(uint256 _num) public {
+        num = _num;
+    }
+    function check() public view returns (string memory)  {
+         if(num % 2 == 0) {
+            return string("The number entered is even.");
+        }
+            return string(abi.encodePacked("The number entered is odd."));
+    }
+
+}
+
+
+
+(5)	String
+
+CODE:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+contract Hello{
+    string public greet;
+    constructor(){
+        greet="Hello, MScIT";
+    }
+    function setGreet(string memory _newgreet) public{
+        greet=_newgreet;
+    }
+}
+
+
+
+1) Arrays
+2) Enums
+5) Special Variables
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+contract Variables {
+    int256 public signNum;
+    bool public isTrue;
+    address public walletAddress;
+    uint256[3] public fixArray;
+    string public message;
+    enum STATUS { pending, approved } // return index of enums instead of actual value, starting from 0.
+    STATUS public currentStatus;
+    constructor() {
+        signNum = -45;
+        isTrue = true;
+        walletAddress = msg.sender; // wallet address
+        fixArray = [1, 2, 3];
+        currentStatus = STATUS.pending; // return index of emum
+        message = "Initial message!";
+    }
+
+    function updateVariables() public {
+        signNum = -20;
+        isTrue = false;
+        walletAddress = msg.sender; // wallet address
+        fixArray[2] = 4; // update value of 3rd element in an array
+        currentStatus = STATUS.approved; // return index of emum
+        message = "Updated message!";
+}
+}
+
+
+
+3). Mappings
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+contract LedgerBalance{
+    mapping(address => uint) balance;
+    mapping(address => string) name;
+    function updateBalance() public returns(uint){
+            balance[msg.sender]=20;
+            return balance[msg.sender];
+    }
+    function senderInfo() public returns(string memory){
+        name[msg.sender] = "Asma";
+        return name[msg.sender];
+    }
+    function printSender() public view returns(address){
+        return msg.sender;
+    }
+}
+
+
+
+4). Ether Units
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract Test{
+    string public calledFallbackfuns;
+    fallback() external payable  {
+    calledFallbackfun = "I am Fallback Function";
+    }
+    function getBalance() public view returns(uint){
+        return address(this).balance;
+    }
+}
+contract Sender{
+function transfer() public payable{
+    require (msg.value>=2 ether,"Insufficient ether sent");
+    (bool sent,)=payable(0x9d83e140330758a8fFD07F8Bd73e86ebcA8a5692).call{value:5 ether}("Transaction Done");
+    require(sent, "transaction Failed");
+    }
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
+
+
+
+1)	Functions:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Function {
+    uint256 public number;
+
+    function setNumber(uint256 _newNumber) public {
+        number = _newNumber;
+    }
+
+    function doubleNumber() public {
+        number *= 2;
+    }
+}
+
+
+2)	View Functions:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract HashContract {
+    bytes32 private message;
+    function hash1(string memory _msg) public {
+        message = keccak256(bytes(_msg));
+    }
+    function getMsg() public view returns (bytes32){
+        return message;
+    }
+}
+
+
+
+3)	Pure Functions:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+contract Sol{
+    function testAddMod() public pure returns (uint) {
+        return addmod(4,5,3);
+    }
+    function testMulMod() public pure returns (uint) {
+        return mulmod(4,5,3);
+    }
+}
+
+
+4)	Fallback Functions:
+Code: a)
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+ contract FallBackFunction {
+ // fallback declaration as external always its declared with out name, parameter and does not
+return any value.
+ string public call;
+ fallback() external payable {
+ call = "I am a fallback function!";
+ }
+ function getBalance() public view returns (uint) {
+ return address(this).balance;
+ }
+}
+
+b)
+//Creating the sender contract
+contract Sender
+{
+ function transferEther() public payable
+ {
+ require (msg.value>=2 ether,"Insufficient Ether Sent");
+ (bool sent,) = payable (0xf8e81D47203A594245E36C48e151709F0C19fBe8).call{value: 1
+ether}("Transaction completed!");
+ require(sent, "Transaction failed!");
+ }
+ function getBalance() public view returns(uint){
+ return address(this).balance;
+ }
+}
+
+
+
+5)	Function Overloading:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract Test
+{
+    function getsum(uint x, uint y) public pure returns  (uint){
+        return x+y;
+    }
+    function getsum(uint x, uint y, uint z) public pure returns (uint){
+        return x+y+z;
+    }
+    function callTwo() public pure returns (uint){
+        return getsum(2,8);
+    }
+    function callthree() public pure returns (uint){
+        return getsum(2,8,20);
+    }
+}
+
+
+
+6)	Mathematical Functions:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+contract PrimeNumber {
+    function isPrime(uint256 n) public pure returns (string memory) {
+        for (uint256 i = 2; i < n; i++) {
+            if (n % i == 0) {
+                return "Not a prime";
+            }
+        }
+        return "prime";
+    }
+}
+
+
+7)	Cryptographic Functions:
+
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract CryptographicFunctions {
+
+    function sha256Hash(string memory _input) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_input));
+    }
+
+
+8)	Generate Random Number:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+contract RandomNumber {
+   uint randomNumber = 0;
+   function setRandomNumber() public {
+        randomNumber = uint (keccak256(abi.encodePacked(msg.sender, randomNumber)));
+    }
+    function getRandomNumber() public view returns (uint) {
+        return randomNumber;
+    }
+}
+
+
+1) Contracts:
+Code:
+//SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract Test{
+    function TakeLoan(uint256) external payable {
+        GiveLoan loan = new GiveLoan (350);
+    }
+}
+contract GiveLoan{
+    uint public money;
+    constructor (uint256 _amt) public {
+        money=_amt;
+    }
+}
+
+
+
+2) Inheritance
+
+1) Single Inheritance in solidity.
+Code:
+//SPDX-License-Identifier:GPL-3.0
+pragma solidity 0.8.24;
+contract Parent{
+    uint internal sum;
+    function setVal() external{
+        uint a=50;
+        uint b=20;
+        uint c=20;
+        sum = a+b+c;
+    }
+}
+contract child is Parent{
+    function getVal() external view returns(uint){
+        return sum;
+    }
+}
+contract caller{
+    child cc = new child();
+    function Inher() public returns (uint)
+    {
+        cc.setVal();
+        return cc.getVal();
+    }
+}
+
+
+
+2) Multiple Inheritance in Solidity
+
+Code:
+//SPDX-License-Identifier:GPL-3.0
+pragma solidity>= 0.8.2<0.9.0;
+
+contract A{
+    string internal x;
+    function setA() external{
+        x = "Multiple inheritance";
+    }
+}
+contract B{
+    uint256 internal pow;
+    function setB() external{
+        uint256 a = 20;
+        uint256 b = 2;
+        pow = a**b;
+    }
+}
+contract C is A,B{
+    function getStr() external returns (string memory){
+        return x;
+    }
+    function getPow() external returns (uint256){
+        return pow;
+    }
+}
+contract caller{
+    C contractC = new C();
+    function testInheritance() public returns(string memory, uint256){
+        contractC.setA();
+        contractC.setB();
+        return (contractC.getStr(),contractC.getPow());
+    }
+}
+
+
+
+3) Constructors in solidity
+
+Step1: create a worksapce
+
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+contract Hello{
+    string public greet;
+    constructor()
+    {
+        greet="Hello, M.Sc I.T K.C";
+    }
+    function setGreet (string memory _newgreet ) public{
+        greet = _newgreet;
+    }
+}
+
+
+
+4) Abstract Class in solidity
+CODE:
+
+//SPDX-License-Identifier:GPL-3.0
+pragma solidity ^0.5.17;
+
+contract A {
+    function getValue() public view returns (uint256);
+}
+contract B is A {
+    function getValue() public view returns (uint256)
+    {
+        uint256 x = 10;
+        uint256 y = 20;
+        uint256 result = x*y;
+        return result;
+    }
+}
+
+
+
+5) Interfaces in Solidity
+
+CODE:
+
+//SPDX-License-Identifier:GPL-3.0
+pragma solidity ^0.5.17;
+
+interface A {
+    function getValue() external view returns (uint256);
+}
+contract B is A {
+    function getValue() external view returns (uint256)
+    {
+        uint256 x = 10;
+        uint256 y = 20;
+        uint256 result = x*y;
+        return result;
+    }
+}
+
+
+
+1).Libraries
+First create the library as the file name.
+pragma solidity ^0.5.0;
+library MathUtils{
+    function add(uint x, uint y) public pure returns(uint){
+        return x+y;
+    }
+}
+Second utilize the created library.
+pragma solidity ^0.5.0;
+import "./MathUtils.sol";
+contract calculator{
+    using MathUtils for uint;
+    function getSum(uint a, uint b) public pure returns(uint){
+        return a.add(b);
+    }
+}
+
+#Second Library
+    a)	Util.sol
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.12;
+library Util {
+    function concat(string memory x,string memory y) public pure returns (string memory) {
+        return string.concat(x, y);
+    }
+    function add(uint x, uint y) public pure returns (uint) {
+        return x + y;
+    }
+}
+
+    b) Test.sol
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.12;
+import "util.sol";
+contract ImportHere {
+    using Util for uint;
+    using Util for string;
+    function sum(uint a, uint b) public pure returns (uint) {
+        return a.add(b);
+    }
+    function concat(string memory x,string memory y) public pure returns (string memory) {
+        return x.concat(y);
+    }
+}
+
+
+
+2). Error Handling
+a)	Require:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+contract requireStatement {
+    function checkInput(uint _input) public pure returns(string memory){
+        require(_input >= 0, "invalid uint8");
+        require(_input <= 255, "invalid uint8");
+        return "Input is Uint8";
+    }
+    function odd(uint _input) public pure returns(bool){
+        require(_input % 2 != 0);
+        return true;
+    }
+}
+
+    b)	Assert:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+contract assertStatement {
+    bool result;
+    function checkOverflow(uint _num1, uint _num2) public {
+        uint sum = _num1 + _num2;
+        assert(sum<=255);
+        result = true;
+    }
+
+    function getResult() public view returns(string memory){
+        if(result == true){
+            return "No Overflow";
+        }
+        else{
+            return "Overflow exist";
+        }
+    }
+}
+
+    c)	Revert:
+Code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+contract revertStatement {
+function checkOverflow(uint _num1, uint _num2) public pure returns(string memory, uint){
+        uint sum = _num1 + _num2;
+        if(sum < 0 || sum > 255){
+            return ("Overflow", sum);
+            revert(" Overflow Exist");
+        }
+        else{
+            return ("No Overflow", sum);
+        }
+    }
+}
+
